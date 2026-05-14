@@ -1,0 +1,7 @@
+requests
+opencv-python
+pillow
+pyserial
+deep-translator
+ultralytics
+gtts
