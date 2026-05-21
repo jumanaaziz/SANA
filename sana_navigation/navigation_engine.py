@@ -1,6 +1,5 @@
 import json
 import heapq
-import math
 
 
 def load_map(file_path="map.json"):
@@ -96,7 +95,7 @@ def get_turn_instruction(current_heading, new_heading):
         return "استدر للخلف"
 
 
-def get_edge_distance(map_data, from_node_id, to_node_id):
+def get_edge_steps(map_data, from_node_id, to_node_id):
     for edge in map_data["edges"]:
         same_direction = (
             edge["fromNodeId"] == from_node_id and
@@ -109,9 +108,18 @@ def get_edge_distance(map_data, from_node_id, to_node_id):
         )
 
         if same_direction or opposite_direction:
-            return edge["distance"]
+            return edge["steps"]
 
     return 0
+
+
+def get_step_word(steps):
+    if steps == 1:
+        return "خطوة"
+    elif steps == 2:
+        return "خطوتين"
+    else:
+        return "خطوات"
 
 
 def generate_instructions(map_data, route, start_heading="north"):
@@ -124,9 +132,11 @@ def generate_instructions(map_data, route, start_heading="north"):
 
         new_heading = get_direction(current_node, next_node)
         turn_text = get_turn_instruction(current_heading, new_heading)
-        distance = get_edge_distance(map_data, route[i], route[i + 1])
 
-        instructions.append(f"{turn_text} ثم امشِ {distance} متر")
+        steps = get_edge_steps(map_data, route[i], route[i + 1])
+        step_word = get_step_word(steps)
+
+        instructions.append(f"{turn_text} ثم امشِ {steps} {step_word}")
 
         current_heading = new_heading
 
