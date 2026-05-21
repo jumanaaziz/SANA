@@ -35,13 +35,6 @@ def find_destination_node(map_data, destination_name):
     return None
 
 
-def get_node(map_data, node_id):
-    for node in map_data["nodes"]:
-        if node["nodeId"] == node_id:
-            return node
-    return None
-
-
 def dijkstra(graph, start_node, goal_node):
     queue = [(0, start_node, [])]
     visited = set()
@@ -68,14 +61,15 @@ def dijkstra(graph, start_node, goal_node):
     return None, None
 
 
-def get_direction(from_node, to_node):
-    dx = to_node["x"] - from_node["x"]
-    dy = to_node["y"] - from_node["y"]
+def get_opposite_direction(direction):
+    opposites = {
+        "north": "south",
+        "south": "north",
+        "east": "west",
+        "west": "east"
+    }
 
-    if abs(dx) > abs(dy):
-        return "east" if dx > 0 else "west"
-    else:
-        return "north" if dy > 0 else "south"
+    return opposites[direction]
 
 
 def get_turn_instruction(current_heading, new_heading):
@@ -108,28 +102,15 @@ def get_edge_info(map_data, from_node_id, to_node_id):
             edge["toNodeId"] == from_node_id
         )
 
-        if same_direction or opposite_direction:
+        if same_direction:
             return edge
 
+        if opposite_direction:
+            reversed_edge = edge.copy()
+            reversed_edge["direction"] = get_opposite_direction(edge["direction"])
+            return reversed_edge
+
     return None
-
-
-def get_edge_steps(map_data, from_node_id, to_node_id):
-    edge = get_edge_info(map_data, from_node_id, to_node_id)
-
-    if edge is not None:
-        return edge["steps"]
-
-    return 0
-
-
-def get_edge_time(map_data, from_node_id, to_node_id):
-    edge = get_edge_info(map_data, from_node_id, to_node_id)
-
-    if edge is not None:
-        return edge["timeSeconds"]
-
-    return 0
 
 
 def get_step_word(steps):
@@ -146,20 +127,19 @@ def generate_instructions(map_data, route, start_heading="north"):
     current_heading = start_heading
 
     for i in range(len(route) - 1):
-        current_node = get_node(map_data, route[i])
-        next_node = get_node(map_data, route[i + 1])
+        edge = get_edge_info(map_data, route[i], route[i + 1])
 
-        new_heading = get_direction(current_node, next_node)
+        if edge is None:
+            instructions.append("حدث خطأ في المسار")
+            return instructions
+
+        new_heading = edge["direction"]
         turn_text = get_turn_instruction(current_heading, new_heading)
 
-        steps = get_edge_steps(map_data, route[i], route[i + 1])
+        steps = edge["steps"]
         step_word = get_step_word(steps)
 
-        time_seconds = get_edge_time(map_data, route[i], route[i + 1])
-
-        instructions.append(
-            f"{turn_text} ثم امشِ {steps} {step_word}. الوقت المتوقع {time_seconds} ثانية"
-        )
+        instructions.append(f"{turn_text} ثم امشِ {steps} {step_word}")
 
         current_heading = new_heading
 
@@ -219,21 +199,17 @@ def navigate_step_by_step(current_node_id, destination_name, start_heading="nort
     current_heading = start_heading
 
     for i in range(len(route) - 1):
-        current_node = get_node(map_data, route[i])
-        next_node = get_node(map_data, route[i + 1])
-
         edge = get_edge_info(map_data, route[i], route[i + 1])
 
         if edge is None:
             print("حدث خطأ في المسار")
             return current_node_id
 
-        new_heading = get_direction(current_node, next_node)
+        new_heading = edge["direction"]
         turn_text = get_turn_instruction(current_heading, new_heading)
 
         steps = edge["steps"]
         step_word = get_step_word(steps)
-
         time_seconds = edge["timeSeconds"]
 
         print(f"{turn_text} ثم امشِ {steps} {step_word}")
