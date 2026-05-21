@@ -1,18 +1,12 @@
-from navigation_engine import navigate
+from navigation_engine import navigate_step_by_step
 
-current_node = "N1"
-destination = "Classroom 44"
-heading = "south"
+current_location = "N1"
+current_heading = "north"
 
-route, distance, instructions = navigate(
-    current_node,
-    destination,
-    heading
+current_location = navigate_step_by_step(
+    current_node_id=current_location,
+    destination_name="Classroom 44",
+    start_heading=current_heading
 )
 
-print("Route:", route)
-print("Total distance:", distance, "meters")
-print("\nInstructions:")
-
-for instruction in instructions:
-    print("-", instruction)
+print("Current location after navigation:", current_location)

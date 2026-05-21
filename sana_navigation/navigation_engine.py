@@ -1,5 +1,6 @@
 import json
 import heapq
+import time
 
 
 def load_map(file_path="map.json"):
@@ -95,7 +96,7 @@ def get_turn_instruction(current_heading, new_heading):
         return "استدر للخلف"
 
 
-def get_edge_steps(map_data, from_node_id, to_node_id):
+def get_edge_info(map_data, from_node_id, to_node_id):
     for edge in map_data["edges"]:
         same_direction = (
             edge["fromNodeId"] == from_node_id and
@@ -108,7 +109,25 @@ def get_edge_steps(map_data, from_node_id, to_node_id):
         )
 
         if same_direction or opposite_direction:
-            return edge["steps"]
+            return edge
+
+    return None
+
+
+def get_edge_steps(map_data, from_node_id, to_node_id):
+    edge = get_edge_info(map_data, from_node_id, to_node_id)
+
+    if edge is not None:
+        return edge["steps"]
+
+    return 0
+
+
+def get_edge_time(map_data, from_node_id, to_node_id):
+    edge = get_edge_info(map_data, from_node_id, to_node_id)
+
+    if edge is not None:
+        return edge["timeSeconds"]
 
     return 0
 
@@ -136,7 +155,11 @@ def generate_instructions(map_data, route, start_heading="north"):
         steps = get_edge_steps(map_data, route[i], route[i + 1])
         step_word = get_step_word(steps)
 
-        instructions.append(f"{turn_text} ثم امشِ {steps} {step_word}")
+        time_seconds = get_edge_time(map_data, route[i], route[i + 1])
+
+        instructions.append(
+            f"{turn_text} ثم امشِ {steps} {step_word}. الوقت المتوقع {time_seconds} ثانية"
+        )
 
         current_heading = new_heading
 
@@ -170,3 +193,56 @@ def navigate(current_node_id, destination_name, start_heading="north"):
     )
 
     return route, total_distance, instructions
+
+
+def navigate_step_by_step(current_node_id, destination_name, start_heading="north"):
+    map_data = load_map()
+
+    destination_node = find_destination_node(map_data, destination_name)
+
+    if destination_node is None:
+        print("لم يتم العثور على الوجهة")
+        return current_node_id
+
+    graph = build_graph(map_data)
+
+    route, total_distance = dijkstra(
+        graph,
+        current_node_id,
+        destination_node
+    )
+
+    if route is None:
+        print("لا يوجد مسار متاح لهذه الوجهة")
+        return current_node_id
+
+    current_heading = start_heading
+
+    for i in range(len(route) - 1):
+        current_node = get_node(map_data, route[i])
+        next_node = get_node(map_data, route[i + 1])
+
+        edge = get_edge_info(map_data, route[i], route[i + 1])
+
+        if edge is None:
+            print("حدث خطأ في المسار")
+            return current_node_id
+
+        new_heading = get_direction(current_node, next_node)
+        turn_text = get_turn_instruction(current_heading, new_heading)
+
+        steps = edge["steps"]
+        step_word = get_step_word(steps)
+
+        time_seconds = edge["timeSeconds"]
+
+        print(f"{turn_text} ثم امشِ {steps} {step_word}")
+
+        time.sleep(time_seconds)
+
+        current_node_id = route[i + 1]
+        current_heading = new_heading
+
+    print("وصلت إلى الوجهة")
+
+    return current_node_id
