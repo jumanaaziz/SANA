@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 6
+names: ['Chairs', 'door', 'person', 'sign', 'stairs', 'table']
+
+roboflow:
+  workspace: jumanas-workspace-jydaq
+  project: indoor-data-lqzn9
+  version: 2
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/jumanas-workspace-jydaq/indoor-data-lqzn9/dataset/2
