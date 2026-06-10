@@ -35,7 +35,7 @@ All powered by a Raspberry Pi 5 and AI models running on edge hardware.
 * OCR-based text & sign reading
 * Speech-to-Text (STT)
 * Text-to-Speech (TTS)
-* Indoor localization using VIO/OpenVINS
+* Indoor localization 
 * Haptic feedback using vibration motor
 * Emergency contact calling
 * Mobile application integration
@@ -51,7 +51,7 @@ Camera + IMU + ToF Sensors
             ↓
       Raspberry Pi 5
             ↓
- AI Processing (YOLO/OCR/VIO)
+ AI Processing (YOLO/OCR)
             ↓
 Decision & Navigation Engine
             ↓
@@ -125,23 +125,6 @@ Example:
 ```text
 "Room 101 → Left"
 ```
-
----
-
-## 3. Localization & Navigation
-
-Using:
-
-* Camera frames
-* IMU data
-
-SANA estimates:
-
-```text
-X, Y, Z Position
-```
-
-The estimated position is matched with a stored indoor map graph for navigation.
 
 ---
 
@@ -252,7 +235,6 @@ python navigation.py
 | PCB Design              | Completed   |
 | Raspberry Pi Deployment | Completed   |
 | Sensor Integration      | Completed   |
-| OpenVINS Integration    | Completed   |
 
 ---
 
